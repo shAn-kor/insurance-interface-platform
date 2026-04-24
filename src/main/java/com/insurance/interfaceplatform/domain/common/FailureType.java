@@ -1,0 +1,14 @@
+package com.insurance.interfaceplatform.domain.common;
+
+public enum FailureType {
+    TIMEOUT,
+    CONNECTION_ERROR,
+    AUTHENTICATION_ERROR,
+    AUTHORIZATION_ERROR,
+    VALIDATION_ERROR,
+    EXTERNAL_SYSTEM_ERROR,
+    INTERNAL_SYSTEM_ERROR,
+    DUPLICATE_REQUEST,
+    UNSUPPORTED_PROTOCOL,
+    UNKNOWN_ERROR
+}

@@ -1,0 +1,12 @@
+.gradle/
+build/
+/out/
+
+.forge/
+
+*.class
+*.log
+
+.DS_Store
+.idea/
+*.iml
