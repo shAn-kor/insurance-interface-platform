@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} ?: '보험사 인터페이스 플랫폼'">보험사 인터페이스 플랫폼</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="header">
+    <h1>보험사 금융 IT 인터페이스 통합관리시스템</h1>
+    <p>인터페이스 등록 · 실행 이력 · 장애 대응 · 성능 관리 백엔드 운영 화면</p>
+</header>
+<nav class="nav">
+    <a th:href="@{/}">대시보드</a>
+    <a th:href="@{/interfaces}">인터페이스 관리</a>
+    <a th:href="@{/executions}">실행 이력</a>
+    <a th:href="@{/swagger-ui.html}">Swagger</a>
+    <a href="http://localhost:8090" target="_blank" rel="noreferrer">Kafka UI</a>
+    <a href="http://localhost:9090" target="_blank" rel="noreferrer">Prometheus</a>
+    <a href="http://localhost:3000" target="_blank" rel="noreferrer">Grafana</a>
+</nav>
+<main class="container" th:replace="${content}">
+</main>
+</body>
+</html>

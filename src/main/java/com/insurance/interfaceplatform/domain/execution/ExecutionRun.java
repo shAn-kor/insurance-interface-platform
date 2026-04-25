@@ -87,11 +87,11 @@ public record ExecutionRun(
                 fallbackType, circuitBreakerState, failedAt);
     }
 
-    public ExecutionRun waitRetry(final Instant nextRetryAt, final int nextAttemptCount, final int nextMaxAttemptCount) {
+    public ExecutionRun waitRetry(final Instant nextRetryAt, final int nextAttemptCount, final int nextMaxAttemptCount, final Instant changedAt) {
         return new ExecutionRun(id, executionId, interfaceId, executionType, protocolType, ExecutionStatus.RETRY_WAIT,
                 requestedAt, startedAt, endedAt, durationMillis, requestPayloadHash, idempotencyKey, false,
                 failureType, failureMessage, true, retryCount + 1, parentExecutionId, nextAttemptCount,
-                nextMaxAttemptCount, nextRetryAt, fallbackApplied, fallbackType, circuitBreakerState, Instant.now());
+                nextMaxAttemptCount, nextRetryAt, fallbackApplied, fallbackType, circuitBreakerState, changedAt);
     }
 
     public ExecutionRun deadLetter(final FallbackType nextFallbackType, final Instant deadLetteredAt) {

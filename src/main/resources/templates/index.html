@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::main})}">
+<main>
+    <section class="grid">
+        <article class="card metric-card">
+            <span class="small">등록 인터페이스</span>
+            <strong th:text="${interfaceCount}">0</strong>
+            <p>REST, Kafka/MQ, Batch 중심의 외부기관 연계 기준 정보</p>
+        </article>
+        <article class="card metric-card">
+            <span class="small">실행 이력</span>
+            <strong th:text="${executionCount}">0</strong>
+            <p>실행 ID 기준 상태 전이와 처리 추적</p>
+        </article>
+        <article class="card metric-card">
+            <span class="small">장애 대응</span>
+            <strong>Retry / CB</strong>
+            <p>송신 실패 성공 폴백 금지, Outbox, Dead Letter 확장 예정</p>
+        </article>
+        <article class="card metric-card">
+            <span class="small">파일 전송</span>
+            <strong>Streaming</strong>
+            <p>InputStream / OutputStream 기반 staging, checksum, quarantine</p>
+        </article>
+    </section>
+
+    <section class="card mt-24">
+        <h2>운영 시연 흐름</h2>
+        <ol class="flow-list">
+            <li>인터페이스 관리에서 금감원/제휴사 인터페이스 기준 정보를 등록한다.</li>
+            <li>실행 이력 화면에서 등록된 인터페이스의 수동 실행 이력을 생성한다.</li>
+            <li>상태 변경 버튼으로 REQUESTED → PROCESSING → SUCCESS 흐름을 확인한다.</li>
+            <li>장애 시나리오는 FAILED, RETRY_WAIT, DEAD_LETTER 상태로 추적한다.</li>
+            <li>Kafka UI, Prometheus, Grafana 링크로 운영 도구 화면을 함께 확인한다.</li>
+        </ol>
+    </section>
+</main>
+</html>

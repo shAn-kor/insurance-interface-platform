@@ -11,6 +11,8 @@ import com.insurance.interfaceplatform.domain.execution.ExecutionRunRepository;
 import com.insurance.interfaceplatform.domain.execution.ExecutionStatusHistory;
 import com.insurance.interfaceplatform.domain.execution.ExecutionStatusHistoryRepository;
 import com.insurance.interfaceplatform.domain.execution.ExecutionStatusTransitionPolicy;
+import com.insurance.interfaceplatform.support.error.CoreException;
+import com.insurance.interfaceplatform.support.error.ErrorType;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -18,13 +20,13 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -65,12 +67,27 @@ class ExecutionApplicationServiceTest {
         final ExecutionApplicationService service = service();
         final ExecutionRun requested = ExecutionRun.create("EXE-20260424-000001", command(), Instant.now(clock));
         when(executionRunRepository.findByExecutionId("EXE-20260424-000001")).thenReturn(Optional.of(requested));
-        when(executionRunRepository.save(any(ExecutionRun.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(executionRunRepository.updateIfStatus(any(ExecutionRun.class), any(ExecutionStatus.class))).thenReturn(1);
         when(executionStatusHistoryRepository.save(any(ExecutionStatusHistory.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         final ExecutionRun result = service.changeStatus("EXE-20260424-000001", ExecutionStatus.PROCESSING, "처리 시작");
 
         assertThat(result.status()).isEqualTo(ExecutionStatus.PROCESSING);
+    }
+
+    @Test
+    @DisplayName("changeStatus_조건부업데이트실패_동시상태변경충돌예외가발생한다")
+    void changeStatus_conditionalUpdateFailed_throwsConflictException() {
+        final ExecutionApplicationService service = service();
+        final ExecutionRun requested = ExecutionRun.create("EXE-20260424-000001", command(), Instant.now(clock));
+        when(executionRunRepository.findByExecutionId("EXE-20260424-000001")).thenReturn(Optional.of(requested));
+        when(executionRunRepository.updateIfStatus(any(ExecutionRun.class), any(ExecutionStatus.class))).thenReturn(0);
+
+        assertThatThrownBy(() -> service.changeStatus("EXE-20260424-000001", ExecutionStatus.PROCESSING, "처리 시작"))
+                .isInstanceOf(CoreException.class)
+                .extracting("errorType")
+                .isEqualTo(ErrorType.EXECUTION_STATUS_CONFLICT);
+        verify(executionStatusHistoryRepository, never()).save(any(ExecutionStatusHistory.class));
     }
 
     @Test
@@ -93,9 +110,9 @@ class ExecutionApplicationServiceTest {
         final ExecutionRun retryWait = ExecutionRun.create("EXE-20260424-000001", command(), Instant.now(clock))
                 .transit(ExecutionStatus.PROCESSING, Instant.now(clock))
                 .fail(FailureType.TIMEOUT, "timeout", true, Instant.now(clock))
-                .waitRetry(Instant.now(clock).plusSeconds(60), 1, 3);
+                .waitRetry(Instant.now(clock).plusSeconds(60), 1, 3, Instant.now(clock));
         when(executionRunRepository.findByExecutionId("EXE-20260424-000001")).thenReturn(Optional.of(retryWait));
-        when(executionRunRepository.save(any(ExecutionRun.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(executionRunRepository.updateIfStatus(any(ExecutionRun.class), any(ExecutionStatus.class))).thenReturn(1);
         when(executionStatusHistoryRepository.save(any(ExecutionStatusHistory.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         final ExecutionRun result = service.deadLetter("EXE-20260424-000001", FallbackType.DEAD_LETTER);

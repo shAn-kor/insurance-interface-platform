@@ -13,6 +13,8 @@ import com.insurance.interfaceplatform.support.error.CoreException;
 import com.insurance.interfaceplatform.support.error.ErrorType;
 import java.time.Clock;
 import java.time.Instant;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +57,11 @@ public class ExecutionApplicationService {
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "실행 이력을 찾을 수 없습니다."));
     }
 
+    @Transactional(readOnly = true)
+    public Page<ExecutionRun> list(final Pageable pageable) {
+        return executionRunRepository.findAll(pageable);
+    }
+
     @Transactional
     public ExecutionRun changeStatus(final String executionId, final ExecutionStatus nextStatus, final String reason) {
         final ExecutionRun found = executionRunRepository.findByExecutionId(executionId)
@@ -62,9 +69,9 @@ public class ExecutionApplicationService {
         executionStatusTransitionPolicy.validate(found.status(), nextStatus);
         final Instant now = Instant.now(clock);
         final ExecutionRun updated = found.transit(nextStatus, now);
-        final ExecutionRun saved = executionRunRepository.save(updated);
+        updateExecutionRunOrThrow(updated, found.status());
         executionStatusHistoryRepository.save(ExecutionStatusHistory.record(executionId, found.status(), nextStatus, reason, now));
-        return saved;
+        return updated;
     }
 
     @Transactional
@@ -79,9 +86,9 @@ public class ExecutionApplicationService {
         executionStatusTransitionPolicy.validate(found.status(), ExecutionStatus.FAILED);
         final Instant now = Instant.now(clock);
         final ExecutionRun failed = found.fail(failureType, failureMessage, retryable, now);
-        final ExecutionRun saved = executionRunRepository.save(failed);
+        updateExecutionRunOrThrow(failed, found.status());
         executionStatusHistoryRepository.save(ExecutionStatusHistory.record(executionId, found.status(), ExecutionStatus.FAILED, failureMessage, now));
-        return saved;
+        return failed;
     }
 
     @Transactional
@@ -89,10 +96,10 @@ public class ExecutionApplicationService {
         final ExecutionRun found = executionRunRepository.findByExecutionId(executionId)
                 .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "실행 이력을 찾을 수 없습니다."));
         executionStatusTransitionPolicy.validate(found.status(), ExecutionStatus.RETRY_WAIT);
-        final ExecutionRun retryWait = found.waitRetry(nextRetryAt, attemptCount, maxAttemptCount);
-        final ExecutionRun saved = executionRunRepository.save(retryWait);
+        final ExecutionRun retryWait = found.waitRetry(nextRetryAt, attemptCount, maxAttemptCount, Instant.now(clock));
+        updateExecutionRunOrThrow(retryWait, found.status());
         executionStatusHistoryRepository.save(ExecutionStatusHistory.record(executionId, found.status(), ExecutionStatus.RETRY_WAIT, "재시도 대기 전환", Instant.now(clock)));
-        return saved;
+        return retryWait;
     }
 
     @Transactional
@@ -102,8 +109,15 @@ public class ExecutionApplicationService {
         executionStatusTransitionPolicy.validate(found.status(), ExecutionStatus.DEAD_LETTER);
         final Instant now = Instant.now(clock);
         final ExecutionRun deadLettered = found.deadLetter(fallbackType, now);
-        final ExecutionRun saved = executionRunRepository.save(deadLettered);
+        updateExecutionRunOrThrow(deadLettered, found.status());
         executionStatusHistoryRepository.save(ExecutionStatusHistory.record(executionId, found.status(), ExecutionStatus.DEAD_LETTER, "Dead Letter 전환", now));
-        return saved;
+        return deadLettered;
+    }
+
+    public void updateExecutionRunOrThrow(final ExecutionRun executionRun, final ExecutionStatus expectedStatus) {
+        final int updatedCount = executionRunRepository.updateIfStatus(executionRun, expectedStatus);
+        if (updatedCount != 1) {
+            throw new CoreException(ErrorType.EXECUTION_STATUS_CONFLICT, "동시에 다른 요청이 실행 상태를 먼저 변경했습니다.");
+        }
     }
 }

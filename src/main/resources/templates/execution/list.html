@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::main})}">
+<main>
+    <div th:if="${message}" class="notice" th:text="${message}"></div>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+
+    <section class="card">
+        <h2>실행 이력 생성</h2>
+        <p class="small">등록된 인터페이스를 기준으로 수동 실행 이력을 생성합니다. 실제 Adapter 실행은 다음 단계에서 연결됩니다.</p>
+        <form th:action="@{/executions}" method="post">
+            <div class="form-grid">
+                <label>Interface ID
+                    <input type="number" name="interfaceId" th:value="${createRequest.interfaceId}" required>
+                </label>
+                <label>Execution Type
+                    <select name="executionType" required>
+                        <option th:each="type : ${executionTypes}" th:value="${type}" th:text="${type}" th:selected="${type == createRequest.executionType}"></option>
+                    </select>
+                </label>
+                <label>Protocol Type
+                    <select name="protocolType" required>
+                        <option th:each="type : ${protocolTypes}" th:value="${type}" th:text="${type}" th:selected="${type == createRequest.protocolType}"></option>
+                    </select>
+                </label>
+                <label>Idempotency Key
+                    <input name="idempotencyKey" th:value="${createRequest.idempotencyKey}" required>
+                </label>
+                <label>Payload Summary
+                    <textarea name="payloadSummary" th:text="${createRequest.payloadSummary}"></textarea>
+                </label>
+            </div>
+            <div class="actions">
+                <button type="submit">실행 이력 생성</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="card mt-24">
+        <h2>실행 이력 목록</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Execution ID</th>
+                <th>Interface</th>
+                <th>유형/프로토콜</th>
+                <th>상태</th>
+                <th>요청/시작/종료</th>
+                <th>장애/폴백</th>
+                <th>상태 변경</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${executions.empty}">
+                <td colspan="7">생성된 실행 이력이 없습니다.</td>
+            </tr>
+            <tr th:each="item : ${executions.content}">
+                <td>
+                    <strong th:text="${item.executionId}">EXE-20260424-000001</strong><br>
+                    <span class="small" th:text="${item.idempotencyKey}">idempotency-key</span>
+                </td>
+                <td th:text="${item.interfaceId}">1</td>
+                <td>
+                    <span th:text="${item.executionType}">MANUAL</span><br>
+                    <span class="badge" th:text="${item.protocolType}">REST</span>
+                </td>
+                <td><span class="badge warning" th:text="${item.status}">REQUESTED</span></td>
+                <td>
+                    <span class="small">요청: </span><span th:text="${item.requestedAt}">-</span><br>
+                    <span class="small">시작: </span><span th:text="${item.startedAt} ?: '-'">-</span><br>
+                    <span class="small">종료: </span><span th:text="${item.endedAt} ?: '-'">-</span><br>
+                    <span class="small">처리시간: </span><span th:text="${item.durationMillis} ?: '-'">-</span>
+                </td>
+                <td>
+                    <span class="small">Failure: </span><span th:text="${item.failureType} ?: '-'">-</span><br>
+                    <span class="small">Fallback: </span><span th:text="${item.fallbackType}">NONE</span><br>
+                    <span class="small">CB: </span><span th:text="${item.circuitBreakerState}">CLOSED</span>
+                </td>
+                <td>
+                    <form th:action="@{/executions/status}" method="post" class="status-form">
+                        <input type="hidden" name="executionId" th:value="${item.executionId}">
+                        <select name="status">
+                            <option th:each="status : ${executionStatuses}" th:value="${status}" th:text="${status}"></option>
+                        </select>
+                        <input name="reason" value="화면에서 상태 변경">
+                        <button type="submit" class="secondary">변경</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</html>

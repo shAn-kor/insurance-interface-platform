@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::main})}">
+<main>
+    <div th:if="${message}" class="notice" th:text="${message}"></div>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+
+    <section class="card">
+        <h2>인터페이스 등록</h2>
+        <p class="small">외부기관 REST API, Kafka/MQ, Batch, SFTP/FTP 인터페이스 기준 정보를 등록합니다.</p>
+        <form th:action="@{/interfaces}" method="post">
+            <div class="form-grid">
+                <label>인터페이스 코드
+                    <input name="interfaceCode" th:value="${registerRequest.interfaceCode}" required>
+                </label>
+                <label>인터페이스명
+                    <input name="interfaceName" th:value="${registerRequest.interfaceName}" required>
+                </label>
+                <label>업무 도메인
+                    <input name="businessDomain" th:value="${registerRequest.businessDomain}" required>
+                </label>
+                <label>외부 기관
+                    <input name="externalOrganization" th:value="${registerRequest.externalOrganization}" required>
+                </label>
+                <label>프로토콜
+                    <select name="protocolType" required>
+                        <option th:each="type : ${protocolTypes}" th:value="${type}" th:text="${type}" th:selected="${type == registerRequest.protocolType}"></option>
+                    </select>
+                </label>
+                <label>설명
+                    <textarea name="description" th:text="${registerRequest.description}"></textarea>
+                </label>
+            </div>
+
+            <h3>엔드포인트/실행 설정</h3>
+            <div class="form-grid">
+                <label>Endpoint URL
+                    <input name="endpointUrl" th:value="${registerRequest.endpoint.endpointUrl}">
+                </label>
+                <label>HTTP Method
+                    <input name="httpMethod" th:value="${registerRequest.endpoint.httpMethod}">
+                </label>
+                <label>Topic Name
+                    <input name="topicName" th:value="${registerRequest.endpoint.topicName}">
+                </label>
+                <label>Queue Name
+                    <input name="queueName" th:value="${registerRequest.endpoint.queueName}">
+                </label>
+                <label>Batch Job Name
+                    <input name="batchJobName" th:value="${registerRequest.endpoint.batchJobName}">
+                </label>
+                <label>File Path
+                    <input name="filePath" th:value="${registerRequest.endpoint.filePath}">
+                </label>
+                <label>Timeout(ms)
+                    <input type="number" name="timeoutMillis" th:value="${registerRequest.endpoint.timeoutMillis}">
+                </label>
+            </div>
+
+            <h3>인증 Alias</h3>
+            <div class="form-grid">
+                <label>Auth Type
+                    <input name="authType" th:value="${registerRequest.authConfig.authType}">
+                </label>
+                <label>API Key Alias
+                    <input name="apiKeyAlias" th:value="${registerRequest.authConfig.apiKeyAlias}">
+                </label>
+                <label>Token Alias
+                    <input name="tokenAlias" th:value="${registerRequest.authConfig.tokenAlias}">
+                </label>
+                <label>Username Alias
+                    <input name="usernameAlias" th:value="${registerRequest.authConfig.usernameAlias}">
+                </label>
+                <label>Password Alias
+                    <input name="passwordAlias" th:value="${registerRequest.authConfig.passwordAlias}">
+                </label>
+                <label>Cert Alias
+                    <input name="certAlias" th:value="${registerRequest.authConfig.certAlias}">
+                </label>
+            </div>
+
+            <h3>레실리언스 정책</h3>
+            <div class="form-grid">
+                <label>Max Retry Count
+                    <input type="number" name="maxRetryCount" th:value="${registerRequest.resiliencePolicy.maxRetryCount}">
+                </label>
+                <label>Retry Interval(ms)
+                    <input type="number" name="retryIntervalMillis" th:value="${registerRequest.resiliencePolicy.retryIntervalMillis}">
+                </label>
+                <label>Backoff Type
+                    <select name="backoffType">
+                        <option th:each="type : ${backoffTypes}" th:value="${type}" th:text="${type}" th:selected="${type == registerRequest.resiliencePolicy.backoffType}"></option>
+                    </select>
+                </label>
+                <label>Circuit Breaker Enabled
+                    <select name="circuitBreakerEnabled">
+                        <option value="true" th:selected="${registerRequest.resiliencePolicy.circuitBreakerEnabled}">true</option>
+                        <option value="false" th:selected="${!registerRequest.resiliencePolicy.circuitBreakerEnabled}">false</option>
+                    </select>
+                </label>
+                <label>Failure Rate Threshold
+                    <input type="number" name="failureRateThreshold" th:value="${registerRequest.resiliencePolicy.failureRateThreshold}">
+                </label>
+                <label>Slow Call Threshold(ms)
+                    <input type="number" name="slowCallThresholdMillis" th:value="${registerRequest.resiliencePolicy.slowCallThresholdMillis}">
+                </label>
+                <label>Minimum Call Count
+                    <input type="number" name="minimumCallCount" th:value="${registerRequest.resiliencePolicy.minimumCallCount}">
+                </label>
+                <label>Open State Wait(ms)
+                    <input type="number" name="openStateWaitMillis" th:value="${registerRequest.resiliencePolicy.openStateWaitMillis}">
+                </label>
+                <label>Bulkhead Enabled
+                    <select name="bulkheadEnabled">
+                        <option value="true" th:selected="${registerRequest.resiliencePolicy.bulkheadEnabled}">true</option>
+                        <option value="false" th:selected="${!registerRequest.resiliencePolicy.bulkheadEnabled}">false</option>
+                    </select>
+                </label>
+                <label>Max Concurrent Calls
+                    <input type="number" name="maxConcurrentCalls" th:value="${registerRequest.resiliencePolicy.maxConcurrentCalls}">
+                </label>
+                <label>Rate Limiter Enabled
+                    <select name="rateLimiterEnabled">
+                        <option value="true" th:selected="${registerRequest.resiliencePolicy.rateLimiterEnabled}">true</option>
+                        <option value="false" th:selected="${!registerRequest.resiliencePolicy.rateLimiterEnabled}">false</option>
+                    </select>
+                </label>
+                <label>Limit For Period
+                    <input type="number" name="limitForPeriod" th:value="${registerRequest.resiliencePolicy.limitForPeriod}">
+                </label>
+            </div>
+            <div class="actions">
+                <button type="submit">인터페이스 등록</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="card mt-24">
+        <h2>인터페이스 목록</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>코드/이름</th>
+                <th>업무/기관</th>
+                <th>프로토콜</th>
+                <th>상태</th>
+                <th>설정</th>
+                <th>실행</th>
+                <th>상태 변경</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${interfaces.empty}">
+                <td colspan="8">등록된 인터페이스가 없습니다.</td>
+            </tr>
+            <tr th:each="item : ${interfaces.content}">
+                <td th:text="${item.id}">1</td>
+                <td>
+                    <strong th:text="${item.interfaceCode}">IF-FSS-CONTRACT-001</strong><br>
+                    <span th:text="${item.interfaceName}">금감원 계약 통계 송신</span>
+                </td>
+                <td>
+                    <span th:text="${item.businessDomain}">CONTRACT</span><br>
+                    <span class="small" th:text="${item.externalOrganization}">FSS</span>
+                </td>
+                <td><span class="badge" th:text="${item.protocolType}">REST</span></td>
+                <td><span class="badge success" th:text="${item.status}">ACTIVE</span></td>
+                <td>
+                    <span class="small" th:text="${item.endpoint.endpointUrl ?: item.endpoint.topicName ?: item.endpoint.batchJobName ?: item.endpoint.filePath ?: '-'}">-</span>
+                </td>
+                <td>
+                    <form th:action="@{'/executions'}" method="post" class="inline-form">
+                        <input type="hidden" name="interfaceId" th:value="${item.id}">
+                        <input type="hidden" name="executionType" value="MANUAL">
+                        <input type="hidden" name="protocolType" th:value="${item.protocolType}">
+                        <input type="hidden" name="idempotencyKey" th:value="${'MANUAL-' + item.id + '-' + #temporals.format(#temporals.createNow(), 'yyyyMMddHHmmssSSS')}">
+                        <input type="hidden" name="payloadSummary" th:value="${'{&quot;source&quot;:&quot;catalog-page&quot;,&quot;interfaceId&quot;:' + item.id + '}'}">
+                        <button type="submit">수동 실행 생성</button>
+                    </form>
+                </td>
+                <td>
+                    <form th:if="${item.status.name() != 'ACTIVE'}" th:action="@{'/interfaces/' + ${item.id} + '/enable'}" method="post" class="inline-form">
+                        <button type="submit">활성화</button>
+                    </form>
+                    <form th:if="${item.status.name() == 'ACTIVE'}" th:action="@{'/interfaces/' + ${item.id} + '/disable'}" method="post" class="inline-form">
+                        <button type="submit" class="secondary">비활성화</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</html>
