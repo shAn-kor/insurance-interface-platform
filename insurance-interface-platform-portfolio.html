@@ -55,6 +55,9 @@
       overflow-x: hidden;
       counter-reset: slide;
     }
+    .card-grid > *, .stat-row > *, .comparison > *, .flow-container > *, .screen-grid > *, .screen-stack > *, .decision-grid > *, .two-col > * {
+      min-width: 0;
+    }
     .slide {
       min-height: 100vh;
       display: flex;
@@ -82,6 +85,7 @@
     }
     .slide__inner { max-width: 1180px; margin: 0 auto; width: 100%; }
     .narrow { max-width: 860px; }
+    .slide--title .slide__inner.narrow { max-width: 1120px; }
     .label {
       font-size: 12px;
       text-transform: uppercase;
@@ -90,8 +94,23 @@
       font-weight: 800;
       margin-bottom: 14px;
     }
-    h1 { font-size: clamp(2.5rem, 7vw, 5.4rem); font-weight: 900; line-height: 1.08; letter-spacing: -0.045em; margin-bottom: 22px; }
-    h2 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.18; letter-spacing: -0.035em; margin-bottom: 18px; }
+    h1 { font-size: clamp(2.5rem, 7vw, 5.4rem); font-weight: 900; line-height: 1.08; letter-spacing: -0.045em; margin-bottom: 22px; word-break: keep-all; }
+    .slide--title h1 { max-width: none; }
+    .title-line {
+      display: block;
+      white-space: nowrap;
+    }
+    .title-gradient-line {
+      display: block;
+      font-size: clamp(1.85rem, 4.4vw, 3.55rem);
+      line-height: 1.08;
+      white-space: nowrap;
+    }
+    .title-gradient-line--compact {
+      font-size: clamp(1.7rem, 4.05vw, 3.2rem);
+      letter-spacing: -0.04em;
+    }
+    h2 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.18; letter-spacing: -0.035em; margin-bottom: 18px; word-break: keep-all; }
     h3 { font-size: 1.18rem; font-weight: 800; margin-bottom: 8px; }
     .desc { color: var(--text-secondary); font-size: clamp(1rem, 1.8vw, 1.18rem); max-width: 860px; margin-bottom: 30px; }
     .gradient-text { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -117,6 +136,8 @@
       padding: 24px;
       backdrop-filter: blur(10px);
       box-shadow: 0 22px 70px rgba(0, 0, 0, .22);
+      overflow-wrap: anywhere;
+      word-break: keep-all;
     }
     .card.strong { background: var(--surface-strong); border-color: var(--border-accent); }
     .card-title { font-size: 1.08rem; font-weight: 900; margin-bottom: 8px; }
@@ -153,7 +174,7 @@
       background: #fff;
     }
     .shot-card { background: rgba(255,255,255,.035); border: 1px solid var(--border); border-radius: 22px; padding: 14px; }
-    .shot-caption { color: var(--text-muted); font-size: .82rem; margin: 10px 4px 0; }
+    .shot-caption { color: var(--text-muted); font-size: .82rem; margin: 10px 4px 0; overflow-wrap: anywhere; }
     .decision-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 18px; margin-top: 20px; }
     .decision-list { list-style: none; display: grid; gap: 10px; }
     .decision-list li { background: rgba(255,255,255,.045); border: 1px solid var(--border); border-radius: 14px; padding: 13px 15px; color: var(--text-secondary); }
@@ -161,11 +182,11 @@
     .pill.good { color: #08251c; background: var(--success); }
     .pill.warn { color: #2c1600; background: var(--accent-3); }
     .pill.bad { color: #2b0505; background: var(--danger); }
-    .evidence { font-size: .82rem; color: var(--text-muted); margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .evidence { font-size: .82rem; color: var(--text-muted); margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; overflow-wrap: anywhere; }
     .quote-box { border-left: 4px solid var(--accent-1); background: var(--surface); border-radius: 0 18px 18px 0; padding: 24px; margin-top: 20px; }
     .quote-text { font-size: 1.12rem; font-weight: 800; line-height: 1.7; }
-    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 18px; margin-top: 18px; }
-    th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 18px; margin-top: 18px; table-layout: fixed; }
+    th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
     th { color: var(--accent-1); background: rgba(255,255,255,.06); font-size: .86rem; }
     td { color: var(--text-secondary); font-size: .9rem; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
@@ -179,6 +200,10 @@
       .comparison-divider { transform: rotate(90deg); text-align: center; }
       .flow-container { grid-template-columns: 1fr; }
       .stat-row { grid-template-columns: 1fr 1fr; }
+      .slide--title .slide__inner.narrow { max-width: 860px; }
+      .title-line, .title-gradient-line { white-space: normal; }
+      .title-gradient-line { font-size: clamp(1.8rem, 8vw, 3.1rem); }
+      .title-gradient-line--compact { font-size: clamp(1.72rem, 7.2vw, 2.85rem); }
     }
   </style>
 </head>
@@ -186,7 +211,7 @@
   <section class="slide slide--title">
     <div class="slide__inner narrow">
       <div class="label">Portfolio / Financial IT Backend</div>
-      <h1>보험사 금융 IT<br><span class="gradient-text">인터페이스 통합관리시스템</span></h1>
+      <h1><span class="title-line">보험사 금융 IT</span><span class="gradient-text title-gradient-line">인터페이스</span><span class="gradient-text title-gradient-line title-gradient-line--compact">통합관리시스템</span></h1>
       <p class="desc">외부 기관 연계 인터페이스를 등록하고, 실행 이력·처리 상태·중복 메시지 방지·배치 락·운영 화면까지 운영 관점에서 관리하는 백엔드 포트폴리오 프로젝트입니다.</p>
       <div>
         <span class="tag">Spring Boot</span><span class="tag">PostgreSQL</span><span class="tag">Kafka</span><span class="tag">Batch</span><span class="tag">Thymeleaf</span><span class="tag">Optimistic Concurrency</span>
